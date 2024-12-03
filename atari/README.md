@@ -6,3 +6,7 @@
 3. Change the csv name to a desired csv file name in the jupyter notebooks where the hyperparameters are defined.
 4. Run all the cells in the notebooks. The agent should start learning!
 
+## **How to plot:**
+1. Train the models to get the csv files. 
+2. Define the paths of the csv files in the plot.ipynb notebook and run the code. It should generate a plot with required legends. 
+
