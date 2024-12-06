@@ -25,8 +25,7 @@ warnings.filterwarnings("ignore")
 
 SIZE = (210, 160, 3)
 WINDOW_SIZE = 1             # Number of frames to stack together as input to the network
-ACTIONS = 6                 # Action space of the environment (6 for assault-v5, 4 for breakout-v5)
-
+seed = 0
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # Use GPU if available
 print(device)
 
@@ -34,38 +33,56 @@ print(device)
 
 #Wrapper for environment manipulation and for creating the POMDP formulation
 class Wrapper(gym.ActionWrapper):
-    """
-    A wrapper for creating a partially observable environment by randomly masking frames.
+    def __init__(self, env, mask_prob=0.5):
+        """
+        Wrapper to restrict actions and make the environment partially observable.
 
-    Args:
-        env (gym.Env): The environment to wrap.
-        mask_prob (float): Probability of masking a frame (default is 0.01).
-
-    Methods:
-        reset(): Resets the environment and applies masking.
-        step(action): Takes an action in the environment, applies masking to the resulting frame.
-        _apply_mask(observation): Applies a mask to the observation with probability `mask_prob`.
-    """
-    def __init__(self, env, mask_prob=0.01):
+        Args:
+            env: The original gym environment.
+            restricted_actions: List of allowed actions from the original action space.
+            mask_prob: Probability of masking the observation (default is 0.5).
+        """
         super(Wrapper, self).__init__(env)
         self.mask_prob = mask_prob
+        # Define a new action space with only the restricted actions
 
     def reset(self):
-        # Reset the environment and return the first observation
-        observation = self.env.reset()
+        """
+        Reset the environment and return the first (potentially masked) observation.
+        """
+        observation = self.env.reset(seed=seed)
         return self._apply_mask(observation)
 
     def step(self, action):
+        """
+        Take a step in the environment using the restricted action space.
+
+        Args:
+            action: Action from the reduced action space.
+
+        Returns:
+            A tuple of (observation, reward, done, info).
+        """
         observation, reward, done, info = self.env.step(action)
         # Apply the mask to make the environment partially observable
         observation = self._apply_mask(observation)
         return observation, reward, done, info
 
     def _apply_mask(self, observation):
-        # Replace the frame with an all-black frame with probability `mask_prob`
+        """
+        Mask the observation with a probability of `mask_prob`.
+
+        Args:
+            observation: The original observation.
+
+        Returns:
+            Either the original observation or a black frame.
+        """
         if np.random.rand() < self.mask_prob:
             return np.zeros_like(observation)  # Black frame (all zeros)
         return observation
+
+
 
 #LSTM model
 class LSTM(nn.Module):
@@ -80,7 +97,7 @@ class LSTM(nn.Module):
     Methods:
         forward(x): Processes input sequences and returns Q-values for actions.
     """
-    def __init__(self, inp, hidden, layers):
+    def __init__(self, inp, hidden, layers, ACTIONS):
         super().__init__()
         self.hidden = 512
         self.layers = layers 
@@ -123,12 +140,12 @@ class Net(nn.Module):
         self.bn2 = nn.BatchNorm2d(64)
         self.relu2 = nn.ReLU()
         
-        self.conv3 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=0)
         self.bn3 = nn.BatchNorm2d(64)
         self.relu3 = nn.ReLU()
         
         # Pooling layer to reduce dimensions
-        self.pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))  # Output dimensions match ResNet's feature output (512, 1, 1)
+        self.pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))  
 
     def forward(self, x):
         # Pass input through the three convolutional layers
@@ -208,7 +225,7 @@ class Agent:
         train(): Samples from memory and trains the model.
         train_batch(states, next_states, actions, rewards, dones): Trains the model on a batch of transitions.
     """
-    def __init__(self, model, feature_extractor, epsMem, batchsize=64, ep_window_size=3, l_rate=0.001, epsilon_decay=0.9999):
+    def __init__(self, act, model, feature_extractor, epsMem, batchsize=64, ep_window_size=3, l_rate=0.001, epsilon_decay=0.9999):
         self.model = model # LSTM based Q Network
         self.feature_extractor = feature_extractor # ResNet18 based Transfer Learned Feature Extractor
         self.target_model = copy.deepcopy(model) # Target Network for Double DQN based learning
@@ -217,6 +234,7 @@ class Agent:
         self.ep_window_size = ep_window_size
         self.epsilon = 1.0
         self.gamma = 0.9
+        self.act = act
         
         # optimizer for both feature extractor and model
         self.optimizer = torch.optim.Adagrad(
@@ -264,7 +282,7 @@ class Agent:
         pred = self.model(state) # predict the Q values for the current state
         # randomly take an action with epsilon probability
         if random.random() < self.epsilon:
-            return random.randint(0, ACTIONS-1)
+            return random.randint(0, self.act-1)
         else:
             # take the action predicted by the Deep Q network
             return torch.argmax(pred[0]).item()
@@ -326,7 +344,7 @@ class Agent:
         # Predict the reward for the current state
         predicted_reward = self.model(states)
     
-        actions_one_hot = torch.nn.functional.one_hot(actions, ACTIONS) #change this to 6 for bowling for assaultv-5
+        actions_one_hot = torch.nn.functional.one_hot(actions, self.act) #change this to 6 for bowling for assaultv-5
         # Multiply the predicted reward with the one hot encoded actions
         predicted_reward = torch.sum(predicted_reward * actions_one_hot, axis=1)
         # Calculate the loss wrt the final reward
@@ -369,7 +387,7 @@ def visualize_rewards(rew):
     plt.ylabel("Reward")
     plt.show()
 
-def save_frames_as_gif(frames, path='./gifs', filename='gym_animation.gif'):
+def save_frames_as_gif(frames, path='./gifs/', filename='breakout.gif'):
     """
     Saves a sequence of frames as a GIF.
 
@@ -399,7 +417,7 @@ def save_frames_as_gif(frames, path='./gifs', filename='gym_animation.gif'):
     plt.clf()
     plt.close()
 
-def initialize_model(eps_mem_size=5, num_lstm_hidden_layers=512, batch_size=64, ep_window_size=5, l_rate=0.0005, epsilon_decay=0.99, vanilla = False):
+def initialize_model(act, eps_mem_size=5, num_lstm_hidden_layers=512, batch_size=64, ep_window_size=5, l_rate=0.0005, epsilon_decay=0.99, vanilla = False):
     """
     Initializes the episodic memory, feature extractor, and reinforcement learning agent.
 
@@ -418,12 +436,12 @@ def initialize_model(eps_mem_size=5, num_lstm_hidden_layers=512, batch_size=64, 
 
     epMem = EpisodicMemory(MAX_LENGTH=eps_mem_size, vanilla = vanilla)
     feature_extractor = Net().to(device)
-    model = LSTM(64, num_lstm_hidden_layers, 1).to(device)
-    agent = Agent(model, feature_extractor, epMem, batch_size, ep_window_size, l_rate, epsilon_decay)
+    model = LSTM(64, num_lstm_hidden_layers, 1, act).to(device)
+    agent = Agent(act, model, feature_extractor, epMem, batch_size, ep_window_size, l_rate, epsilon_decay)
     return (epMem, model, agent)
           
 def train(env, agent, epMem, epsilon_decay, num_of_episodes, time_step_size, window_size, show_gifs=False, gif_show_frequency=1, csvfile_name='plot_data.csv'):
-
+  global seed
   
   scheduler = StepLR(agent.optimizer, step_size=25, gamma=0.8)
   with open(csvfile_name, 'w') as file:
@@ -431,11 +449,13 @@ def train(env, agent, epMem, epsilon_decay, num_of_episodes, time_step_size, win
 
     
   step_count = 0
-  for i in range(1,num_of_episodes-1):
-      if(i<200):
-            agent.epsilon=1/max(1, i/10)
-      else:
-           agent.epsilon = 0.05*(epsilon_decay**(i-199))
+  for i in range(num_of_episodes):
+    #   if(i<200):
+    #         agent.epsilon=1/max(1, i/10)
+    #   else:
+    #        agent.epsilon = 0.05*(epsilon_decay**(i-199))
+           
+      agent.epsilon = epsilon_decay*agent.epsilon
 
       # Updated reset logic for compatibility
       reset_result = env.reset()
@@ -456,7 +476,10 @@ def train(env, agent, epMem, epsilon_decay, num_of_episodes, time_step_size, win
 
       for t in range(time_step_size):
           frames.append(env.render(mode='rgb_array'))
-          action = agent.predict(curr_state)
+          if t==0:
+            action = 1
+          else:
+            action = agent.predict(curr_state)
           observation, reward, done, info = env.step(action)
           prev_state = curr_state.copy()
           curr_state.pop(0)
@@ -475,15 +498,15 @@ def train(env, agent, epMem, epsilon_decay, num_of_episodes, time_step_size, win
 
       scheduler.step()
       epMem.end_episode()
-      print(f'Episode: {i}, Number of steps: {step_count}, Total Reward: {total_reward}')
+      print(f'Episode: {i+1}, Number of steps: {step_count}, Total Reward: {total_reward}')
       with open(csvfile_name, 'a') as file:
             # log the data to the csv file for plotting subsequently
             x = [total_reward, avg_train_loss/time_step_size, agent.epsilon, last_life, scheduler.get_lr()]
             x = [str(i) for i in x]
             file.write(','.join(x) + '\n')
 
-      if(show_gifs and i % gif_show_frequency == 0):
+      if(show_gifs and i+1 % gif_show_frequency == 0):
+    #   if(total_reward>=500):
           # save the frames as a gif if show_gifs is True and at a frequency of gif_show_frequency
-          save_frames_as_gif(frames, filename=f'gym_animation_{i//gif_show_frequency}.gif')
-          display(Image(data=open(f'gym_animation_{i//gif_show_frequency}.gif','rb').read(), format='png'))       
-            
+          save_frames_as_gif(frames, filename=f'bowling_{i//gif_show_frequency}.gif')
+          display(Image(data=open(f'gifs/bowling_{i//gif_show_frequency}.gif','rb').read(), format='png'))       
