@@ -109,7 +109,14 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
      # Video performance
 
      <p align="center">
-        <img src="imgs/assault_video.gif" alt="Videp performance of Assualt env" />
+        <img src="imgs/assault_video.gif" alt="Videp performance of Assault env" />
+        <br>
+        <br>
+         <img src="imgs/cartpole.gif" alt="Videp performance of cartpole env" />
+         <br>
+         <br>
+          <img src="imgs/breakout.gif" alt="Videp performance of breakout env" />
+          <br>
     </p>
     
 
