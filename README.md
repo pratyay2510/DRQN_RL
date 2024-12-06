@@ -114,7 +114,7 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
         <img src="imgs/cartpole_graph.png" alt="Videp performance of Assault env" />
     </p>
 
- 
+      ---
     - Assault 
      ![Comparison of evaluation reward with episodes in Assault environment](imgs/assault_graph.png)
      ---
