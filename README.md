@@ -109,10 +109,12 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
 
     We have conducted experiments on three partially environments. We ran 4 DQN with 4 frames, DQN with 10 frames and DRQN with 1 frame. We were able to give a proof of concept that leveraging temporal information in arcade enviroments, improves the reward score in scenarios were temporal information is crucial for performance. 
 
-    - Cartpole-v1  
-    
-    ![Comparison of evaluation reward with episodes in Carpole environment](imgs/cartpole_graph.png)
-    ---
+    - Cartpole-v1    
+    <p align="center">
+        <img src="imgs/cartpole_graph.png" alt="Videp performance of Assault env" />
+    </p>
+
+ 
     - Assault 
      ![Comparison of evaluation reward with episodes in Assault environment](imgs/assault_graph.png)
      ---
