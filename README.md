@@ -49,10 +49,23 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
 1. **CartPole-v1**:
    - The objective is to balance a pole on a moving cart by applying forces to the cart.
    - We have made the environment partially observable. Instead of using all the 4 observations from the environment, we have only used the cart position and the cart velocity as our observations thereby making it partially observable.
+
+    <p align="center">
+         <img src="imgs/cartpole.gif" alt="Videp performance of cartpole env" />
+    </p>
+
 2. **Assault-v5**:
    - To make our environment partially observable, we wrap the environment in a wrapper class that outputs a black screen with a probability of 0.5 at each step of the environment thereby making it partially observable by blacking out some frames.
-3. **Bowling-v4:**:
+    <p align="center">
+        <img src="imgs/assault_video.gif" alt="Videp performance of Assault env" />
+    </p>
+
+3. **Breakout-v5:**:
    - To make our environment partially observable, we wrap the environment in a wrapper class that outputs a black screen with a probability of 0.5 at each step of the environment thereby making it partially observable by blacking out some frames..
+    <p align="center">
+        <img src="imgs/breakout.gif" alt="Videp performance of Assault env" />
+    </p>
+
 
 ---
 
@@ -104,20 +117,7 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
      ---
     - Breakout-v5
      ![Comparison of evaluation reward with episodes in Breakout environment](imgs/breakout_graph.png)
-
-
-     # Video performance
-
-     <p align="center">
-        <img src="imgs/assault_video.gif" alt="Videp performance of Assault env" />
-        <br>
-        <br>
-         <img src="imgs/cartpole.gif" alt="Videp performance of cartpole env" />
-         <br>
-         <br>
-          <img src="imgs/breakout.gif" alt="Videp performance of breakout env" />
-          <br>
-    </p>
+    
     
 
 
