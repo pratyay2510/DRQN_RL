@@ -16,7 +16,7 @@ This project implements and compares **Deep Q-Networks (DQN)** and **Deep Recurr
 
 ---
 
-## **1. Abstract**
+## **1. Abstract** <a name="abstract">
 
 _In this project, we plan to implement a Partially Observable Markov Decision Process (POMDP) for learning
 a policy for an agent to play Atari. Atari games are considered MDP since DQNs can take the full RAM state as
@@ -33,7 +33,7 @@ You can find the report [here](https://drive.google.com/file/d/1hZ22LzYFNmO18kNw
 
 ---
 
-## **2. Features**
+## **2. Features** <a name="features">
 - **DQN Implementation**:
   - Uses 3 convolutional layers.
   - Suitable for environments with full observability.
@@ -44,7 +44,7 @@ You can find the report [here](https://drive.google.com/file/d/1hZ22LzYFNmO18kNw
 
 ---
 
-## **3. Environments**
+## **3. Environments** <a name="environments">
 This project uses various environments from **OpenAI Gym** and custom setups. Examples include:
 1. **CartPole-v1**:
    - The objective is to balance a pole on a moving cart by applying forces to the cart.
@@ -56,7 +56,7 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
 
 ---
 
-## **4. Installation**
+## **4. Installation** <a name="installation">
 ### **Requirements**
 - Python 3.8+
 - Libraries:
@@ -90,9 +90,9 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
     the file run_drqn.ipybn is a notebook with the code to run experiments for dqn, you can change the environment in this line
     `env = gym.make("ALE/Breakout-v5", render_mode="rgb_array") `
 
-    Mek sure to define a csvfile_name to save your results
+    Make sure to define a csvfile_name to save your results
 
-    ## **6. Results**
+    ## **6. Results** <a name="results">
 
     We have conducted experiments on three partially environments. We ran 4 DQN with 4 frames, DQN with 10 frames and DRQN with 1 frame. We were able to give a proof of concept that leveraging temporal information in arcade enviroments, improves the reward score in scenarios were temporal information is crucial for performance. 
 
@@ -108,21 +108,21 @@ This project uses various environments from **OpenAI Gym** and custom setups. Ex
 
      # Video performance
 
-     <video width="640" height="360" controls>
-  <source src="imgs/assault_video.mov" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+     <p align="center">
+        <img src="imgs/assault_video.gif" alt="Videp performance of Assualt env" />
+    </p>
+    
 
 
-## 7. Acknowledgments
+## 7. Acknowledgments <a name="acknowledgments">
 
-This code and project was developed by Pratyay Dutta, Andrea Tejeda and Nghia Nguyen
+- This code and project was developed by Pratyay Dutta, Andrea Tejeda and Nghia Nguyen
 
-Special thanks to Dr. Ioannis Karamouzas for his guidance and mentorship during the course
+- Special thanks to Dr. Ioannis Karamouzas for his guidance and mentorship during the course
 
-Thanks to OpenAI and Farama Foundation for providing the resources for this project
+- Thanks to OpenAI and Farama Foundation for providing the resources for this project
 
-## 8. License
+## 8. License <a name="license">
 
 This project is licensed under the Apache License 2.0. You may obtain a copy of the license at:
 
