@@ -29,7 +29,7 @@ the effect of using recurrent information in the Qnetworks. We also planned to d
 partially observable environments. However, due to license issues (public key for the gym-gridverse github), we
 could not show results on them._
 
-You can find the report [here](https://drive.google.com/file/d/1hZ22LzYFNmO18kNw4xlfR2pCUS9SeL3G/view?usp=drive_link)
+You can find the report [here]([https://drive.google.com/file/d/1hZ22LzYFNmO18kNw4xlfR2pCUS9SeL3G/view?usp=drive_link](https://drive.google.com/file/d/1lMQWHHMDf8su1LJt19glmY7xCWjKAt_v/view?usp=sharing))
 
 ---
 
